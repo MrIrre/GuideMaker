@@ -1,6 +1,8 @@
 package com.example.myguides
 
 import android.content.Intent
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class BookmarksListActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
+    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,32 +32,21 @@ class BookmarksListActivity : AppCompatActivity() {
         searchButton.visibility = View.GONE
         searchLineView.visibility = View.GONE
 
-        recyclerView.adapter = GuideSearchActivity.Adapter(generateFakeValues())
+    
+        val recyclerView: RecyclerView = findViewById(R.id.slides_list_recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // TODO: client get liked guides
-    }
-
-    fun showGuideFromBookmarks(view: View) {
-        val position = recyclerView.getChildLayoutPosition(view.parent as View)
-        val guideItem = (recyclerView.adapter as GuideSearchActivity.Adapter).getByIndex(position)
-
-
-        val intent = Intent(this, GuideActivity::class.java)
-        intent.putExtra("current_guide_id", guideItem.id)
-        intent.putExtra("current_guide_name", guideItem.name)
-        startActivity(intent)
-    }
-
-    // TODO: DELETE ME!!!
-    private fun generateFakeValues(): List<GuideSearchActivity.GuideShortInfo> {
-        val values = mutableListOf<GuideSearchActivity.GuideShortInfo>()
-
-        for (i in 0..100) {
-            values.add(GuideSearchActivity.GuideShortInfo("$i element", i.toString()))
+        val guidesResult = client.getLikedGuides()
+        if (!guidesResult.isSuccessful())
+        {
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+            val error = guidesResult.error as String
+            dlgAlert.setMessage("Could not get liked guides, sorry.\n Error: $error")
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
         }
-
-        return values
     }
-
 
 }

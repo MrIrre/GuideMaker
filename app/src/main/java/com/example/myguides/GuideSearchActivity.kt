@@ -1,5 +1,7 @@
 package com.example.myguides
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 class GuideSearchActivity : AppCompatActivity() {
     private lateinit var searchPlainText: EditText
     private lateinit var recyclerView: RecyclerView
+    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,26 +30,29 @@ class GuideSearchActivity : AppCompatActivity() {
     }
 
 
-    // TODO: DELETE ME!!!
-    private fun generateFakeValues(): List<GuideShortInfo> {
-        val values = mutableListOf<GuideShortInfo>()
-
-        for (i in 0..100) {
-            values.add(GuideShortInfo("$i element", i.toString()))
-        }
-
-        return values
-    }
-
     fun search(view: View) {
         val textToSearch = searchPlainText.text.toString()
-        // TODO: send client request (search Route)
-        // TODO: parse response???
-
-        val guides: List<GuideShortInfo> = listOf() // TODO: list guides from response
 
 
-        recyclerView.adapter = Adapter(generateFakeValues()) // Change to "Adapter(guides.map(guide => guide.name))"
+        val guides = client.searchGuides(textToSearch)
+
+        if (!guides.isSuccessful())
+        {
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+
+            dlgAlert.setMessage("Could not find guides, sorry")
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
+
+            dlgAlert.setPositiveButton("Ok",
+                DialogInterface.OnClickListener { dialog, which -> })
+
+            return
+        }
+
+        recyclerView.adapter = Adapter(guides.value as List<GuideDescription>)
     }
 
     fun showGuide(view: View) {
@@ -60,12 +66,10 @@ class GuideSearchActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    data class GuideShortInfo(val name: String, val id: String)
-
-    class Adapter(private val values: List<GuideShortInfo>): RecyclerView.Adapter<Adapter.ViewHolder>() {
+    class Adapter(private val values: List<GuideDescription>): RecyclerView.Adapter<Adapter.ViewHolder>() {
         override fun getItemCount() = values.size
 
-        fun getByIndex(position: Int): GuideShortInfo {
+        fun getByIndex(position: Int): GuideDescription {
             return values[position]
         }
 
