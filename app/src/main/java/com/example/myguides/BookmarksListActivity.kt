@@ -1,5 +1,7 @@
 package com.example.myguides
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,6 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class BookmarksListActivity : AppCompatActivity() {
+    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_guide_search)
@@ -26,20 +30,26 @@ class BookmarksListActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.slides_list_recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        recyclerView.adapter = GuideSearchActivity.Adapter(generateFakeValues())
+
+        val guidesResult = client.getLikedGuides()
+        if (!guidesResult.isSuccessful())
+        {
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+            val error = guidesResult.error as String
+            dlgAlert.setMessage("Could not get liked guides, sorry.\n Error: $error")
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
+
+            dlgAlert.setPositiveButton("Ok",
+                DialogInterface.OnClickListener { dialog, which -> })
+
+            return
+        }
+        recyclerView.adapter = GuideSearchActivity.Adapter(guidesResult.value as List<GuideDescription>)
 
         // TODO: client get liked guides
-    }
-
-    // TODO: DELETE ME!!!
-    private fun generateFakeValues(): List<GuideSearchActivity.GuideShortInfo> {
-        val values = mutableListOf<GuideSearchActivity.GuideShortInfo>()
-
-        for (i in 0..100) {
-            values.add(GuideSearchActivity.GuideShortInfo("$i element", i.toString()))
-        }
-
-        return values
     }
 
 

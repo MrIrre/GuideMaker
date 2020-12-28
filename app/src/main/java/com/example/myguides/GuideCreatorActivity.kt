@@ -2,13 +2,14 @@ package com.example.myguides
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -22,14 +23,19 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.*
 
 
 class GuideCreatorActivity : AppCompatActivity() {
     private val guideSlides: MutableList<Slide> = mutableListOf()
 
     lateinit var slideImageView: ImageView
+    lateinit var guideNameEditText: EditText
     lateinit var slideDescriptionEditText: EditText
+    lateinit var guideDescriptionEditText: EditText
     lateinit var emptyImageViewBitMap: Drawable
+
+    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
 
     //Image request code
     private val PICK_IMAGE_REQUEST = 1
@@ -48,6 +54,8 @@ class GuideCreatorActivity : AppCompatActivity() {
         emptyImageViewBitMap = slideImageView.drawable
 
         slideDescriptionEditText = findViewById(R.id.slide_description_editText)
+        guideNameEditText = findViewById(R.id.guide_name_plainText)
+        guideDescriptionEditText = findViewById(R.id.guide_description_editText)
 
 //        //actionbar
 //        val actionbar = supportActionBar
@@ -72,7 +80,24 @@ class GuideCreatorActivity : AppCompatActivity() {
     }
 
     private fun sendGuide() {
-        println("Client upload HERE!") // TODO!
+        val uuid = UUID.randomUUID().toString();
+        val userId = client.getUserId()
+        val guide = Guide(GuideDescription(uuid, guideNameEditText.text.toString(), guideDescriptionEditText.text.toString()), guideSlides, userId, listOf(), listOf())
+        val saveGuideResult = client.saveGuide(guide)
+        if (!saveGuideResult.isSuccessful()) {
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+            val error = saveGuideResult.error as String
+            dlgAlert.setMessage("Could not save guide, sorry.\n Error: $error")
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
+
+            dlgAlert.setPositiveButton("Ok",
+                DialogInterface.OnClickListener { dialog, which -> })
+
+            return
+        }
         finish()
     }
 
@@ -85,22 +110,15 @@ class GuideCreatorActivity : AppCompatActivity() {
     }
 
     fun addSlide(v: View) {
-        val bitmap = (slideImageView.drawable as BitmapDrawable).bitmap
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        (slideImageView.drawable as BitmapDrawable).bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
         val description = slideDescriptionEditText.text.toString()
 
-        guideSlides.add(Slide(bitmap, description))
+        val slide = Slide(encoded, description)
 
-//        val byteStream = ByteArrayOutputStream()
-//        lateinit var byteArray: ByteArray
-//
-//        byteStream.use { byteStream ->
-//            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteStream)
-//            byteArray = byteStream.toByteArray()
-//        }
-//
-//        val baseString = Base64.encodeToString(byteArray, Base64.DEFAULT)
-//        println(description)
-//        println(guideSlides)
+        guideSlides.add(slide)
 
         slideImageView.setImageDrawable(emptyImageViewBitMap)
         slideDescriptionEditText.setText("")
@@ -135,7 +153,5 @@ class GuideCreatorActivity : AppCompatActivity() {
             STORAGE_PERMISSION_CODE
         )
     }
-
-    data class Slide(val image: Bitmap, val description: String)
 }
 

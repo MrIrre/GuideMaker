@@ -35,7 +35,7 @@ class UnauthorizedClient(private val apiUrl: String) {
 class ApiClient(private val apiUrl: String, private val token: String) {
     private val client: HttpClient = HttpClient()
 
-    fun searchGuides(name: String) : GuideDescriptionResult {
+    fun searchGuides(name: String) : GuideDescriptionListResult {
         val responseAsBytes = runBlocking {
             client.get<ByteArray>{
                 url(apiUrl + "/" + "guides/description?name=$name&take=9999&skip=0")
@@ -45,8 +45,22 @@ class ApiClient(private val apiUrl: String, private val token: String) {
 
         val charset = Charsets.UTF_8;
         val responseString = responseAsBytes.toString(charset);
-        val a = Klaxon().parse<GuideDescriptionResult>(responseString);
-        return a as GuideDescriptionResult;
+        val a = Klaxon().parse<GuideDescriptionListResult>(responseString);
+        return a as GuideDescriptionListResult;
+    }
+
+    fun getLikedGuides() : GuideDescriptionListResult {
+        val responseAsBytes = runBlocking {
+            client.get<ByteArray>{
+                url(apiUrl + "/" + "guides/liked")
+                header("X-PRIVATE-TOKEN", TokenHelper.getToken())
+            }
+        }
+
+        val charset = Charsets.UTF_8;
+        val responseString = responseAsBytes.toString(charset);
+        val a = Klaxon().parse<GuideDescriptionListResult>(responseString);
+        return a as GuideDescriptionListResult;
     }
 
     fun getFullGuide(id: String) : GuideResult {
@@ -62,14 +76,66 @@ class ApiClient(private val apiUrl: String, private val token: String) {
         val a = Klaxon().parse<GuideResult>(responseString);
         return a as GuideResult;
     }
+
+    fun saveGuide(guide: Guide) : GuideDescriptionResult {
+        val json = Klaxon().toJsonString(guide)
+        val responseAsBytes = runBlocking {
+            client.post<ByteArray>{
+                url(apiUrl + "/" + "guides")
+                header("X-PRIVATE-TOKEN", TokenHelper.getToken())
+                body = TextContent(json, ContentType.Application.Json)
+            }
+        }
+
+        val charset = Charsets.UTF_8;
+        val responseString = responseAsBytes.toString(charset);
+        val a = Klaxon().parse<GuideDescriptionResult>(responseString);
+        return a as GuideDescriptionResult;
+    }
+
+    fun getUserId() : String {
+        val responseAsBytes = runBlocking {
+            client.get<ByteArray>{
+                url(apiUrl + "/" + "user")
+                header("X-PRIVATE-TOKEN", TokenHelper.getToken())
+            }
+        }
+
+        val charset = Charsets.UTF_8;
+        val responseString = responseAsBytes.toString(charset);
+        val a = Klaxon().parse<User>(responseString);
+        return a!!.id
+    }
+
+    fun likeGuide(guideId: String) : GuideDescriptionResult {
+        val responseAsBytes = runBlocking {
+            client.post<ByteArray>{
+                url(apiUrl + "/" + "likes/$guideId")
+                header("X-PRIVATE-TOKEN", TokenHelper.getToken())
+            }
+        }
+
+        val charset = Charsets.UTF_8;
+        val responseString = responseAsBytes.toString(charset);
+        val a = Klaxon().parse<GuideDescriptionResult>(responseString);
+        return a as GuideDescriptionResult;
+    }
 }
+
+data class User(val id: String)
 
 data class AuthData(val login: String, val password: String) {
 
 }
 
 data class GuideDescription(val id: String, val name: String, val description: String)
-data class GuideDescriptionResult(val value: List<GuideDescription>?, val error: String? = null) {
+data class GuideDescriptionListResult(val value: List<GuideDescription>?, val error: String? = null) {
+    fun isSuccessful(): Boolean {
+        return value != null;
+    }
+}
+
+data class GuideDescriptionResult(val value: GuideDescription?, val error: String? = null) {
     fun isSuccessful(): Boolean {
         return value != null;
     }
