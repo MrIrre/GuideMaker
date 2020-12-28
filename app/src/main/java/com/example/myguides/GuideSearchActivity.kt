@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class GuideSearchActivity : AppCompatActivity() {
-    lateinit var searchPlainText: EditText
-    lateinit var recyclerView: RecyclerView
+    private lateinit var searchPlainText: EditText
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +79,7 @@ class GuideSearchActivity : AppCompatActivity() {
         }
 
         class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var textView: TextView = itemView.findViewById(R.id.search_guide_list_item)
+            var textView: TextView = itemView.findViewById(R.id.bookmarks_search_guide_list_item)
         }
     }
 }

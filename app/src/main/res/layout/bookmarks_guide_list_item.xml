@@ -37,7 +37,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="15dp"
         android:background="#ffffff"
-        android:onClick="showGuide"
+        android:onClick="showGuideFromBookmarks"
         app:srcCompat="@android:drawable/ic_menu_view" />
 
 
