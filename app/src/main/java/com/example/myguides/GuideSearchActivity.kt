@@ -26,11 +26,11 @@ class GuideSearchActivity : AppCompatActivity() {
 
 
     // TODO: DELETE ME!!!
-    private fun generateFakeValues(): List<Guide> {
-        val values = mutableListOf<Guide>()
+    private fun generateFakeValues(): List<GuideShortInfo> {
+        val values = mutableListOf<GuideShortInfo>()
 
         for (i in 0..100) {
-            values.add(Guide("$i element", i.toString()))
+            values.add(GuideShortInfo("$i element", i.toString()))
         }
 
         return values
@@ -41,7 +41,7 @@ class GuideSearchActivity : AppCompatActivity() {
         // TODO: send client request (search Route)
         // TODO: parse response???
 
-        val guides: List<Guide> = listOf() // TODO: list guides from response
+        val guides: List<GuideShortInfo> = listOf() // TODO: list guides from response
 
 
         recyclerView.adapter = Adapter(generateFakeValues()) // Change to "Adapter(guides.map(guide => guide.name))"
@@ -58,12 +58,12 @@ class GuideSearchActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    data class Guide(val name: String, val id: String)
+    data class GuideShortInfo(val name: String, val id: String)
 
-    class Adapter(private val values: List<Guide>): RecyclerView.Adapter<Adapter.ViewHolder>() {
+    class Adapter(private val values: List<GuideShortInfo>): RecyclerView.Adapter<Adapter.ViewHolder>() {
         override fun getItemCount() = values.size
 
-        fun getByIndex(position: Int): Guide {
+        fun getByIndex(position: Int): GuideShortInfo {
             return values[position]
         }
 

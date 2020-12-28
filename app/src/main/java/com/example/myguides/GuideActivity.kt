@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,8 @@ class GuideActivity : AppCompatActivity() {
     private lateinit var guideDescriptionTextView: TextView
     private lateinit var bookmarkButton: ImageButton
     private lateinit var slidesListRecyclerView: RecyclerView
+
+    private var testFlag: Boolean = true // TODO: delete
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,11 +46,31 @@ class GuideActivity : AppCompatActivity() {
             Slide(getResources().getDrawable( R.drawable.red_rectangle ).toBitmap(), "Shit!")
         ))
 
+        // TODO: check bookmark
+
+        if (false)
+            changeBookmarkButtonState()
+
     }
 
-//    fun clickBookmark() {
-//        guideInfo
-//    }
+    fun changeBookmarkButtonState() {
+
+        if (testFlag) {
+            bookmarkButton.setImageResource(android.R.drawable.star_big_on)
+        }
+        else {
+            bookmarkButton.setImageResource(android.R.drawable.star_big_off)
+        }
+
+        testFlag = !testFlag
+    }
+
+    fun clickBookmark(view: View) {
+        // TODO: client send like
+
+        // if (success)
+        changeBookmarkButtonState()
+    }
 
 //    data class GuideInfo(val guide)
 
