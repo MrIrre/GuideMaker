@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 class LoginActivity : AppCompatActivity() {
     lateinit var loginInput: EditText
     lateinit var passwordInput: EditText
+    val client: UnauthorizedClient = UnauthorizedClient("http://10.0.2.2:5000")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,8 +41,31 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        val intent = Intent(this, MenuActivity::class.java)
-        startActivity(intent)
-        finish()
+        val authData = AuthData(login, password)
+        val loginResult = client.login(authData)
+        if (loginResult.isSuccessful())
+        {
+            TokenHelper.saveToken(loginResult.value!!.token)
+
+            val intent = Intent(this, MenuActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+        else
+        {
+            val error = loginResult.error
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+
+            dlgAlert.setMessage(error)
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
+
+            dlgAlert.setPositiveButton("Ok",
+                DialogInterface.OnClickListener { dialog, which -> })
+
+            return
+        }
     }
 }

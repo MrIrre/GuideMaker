@@ -1,5 +1,7 @@
 package com.example.myguides
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -20,6 +22,7 @@ class GuideActivity : AppCompatActivity() {
     private lateinit var guideDescriptionTextView: TextView
     private lateinit var bookmarkButton: ImageButton
     private lateinit var slidesListRecyclerView: RecyclerView
+    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +30,21 @@ class GuideActivity : AppCompatActivity() {
 
 
         guideId = intent.getStringExtra("current_guide_id") as String
-        // TODO: send client request (get guide by id Route)
+        val guideResult = client.getFullGuide(guideId)
+        if (!guideResult.isSuccessful()) {
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+
+            dlgAlert.setMessage("Could not get guide $guideId, sorry")
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
+
+            dlgAlert.setPositiveButton("Ok",
+                DialogInterface.OnClickListener { dialog, which -> })
+
+            return
+        }
 
 
         guideNameTextView = findViewById(R.id.guide_name_textView)
@@ -36,8 +53,10 @@ class GuideActivity : AppCompatActivity() {
         slidesListRecyclerView = findViewById(R.id.slides_list_recyclerView)
         slidesListRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        guideNameTextView.text = "Guide №$guideId" // TODO: guide name
-        guideDescriptionTextView.text = "$guideId $guideId + $guideId = $guideId" // TODO: guide description
+        val guide = guideResult.value as Guide
+
+        guideNameTextView.text = guide.description.name
+        guideDescriptionTextView.text = guide.description.description // TODO: guide description
         slidesListRecyclerView.adapter = SlideAdapter(listOf( // TODO: guide slides
             Slide(getResources().getDrawable( R.drawable.black_rectangle).toBitmap(), "Interesting!"),
             Slide(getResources().getDrawable( R.drawable.red_rectangle ).toBitmap(), "Shit!")
@@ -52,7 +71,6 @@ class GuideActivity : AppCompatActivity() {
 //    data class GuideInfo(val guide)
 
 
-    data class Slide(val image: Bitmap, val description: String)
 
     class SlideAdapter(private val values: List<Slide>): RecyclerView.Adapter<SlideAdapter.ViewHolder>() {
         override fun getItemCount() = values.size
