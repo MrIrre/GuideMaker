@@ -13,7 +13,7 @@
         android:theme="@style/Theme.MyGuides">
         <activity android:name=".GuideActivity"></activity>
         <activity android:name=".GuideSearchActivity" />
-        <activity android:name=".LikedGuidesListActivity" />
+        <activity android:name=".BookmarksListActivity" />
         <activity android:name=".GuideCreatorActivity" />
         <activity android:name=".MenuActivity" />
         <activity android:name=".GuidesListActivity" />

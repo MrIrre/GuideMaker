@@ -1,6 +1,7 @@
 package com.example.myguides
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -9,6 +10,7 @@ class MenuActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
 
     fun createGuide(view: View) {
@@ -22,7 +24,7 @@ class MenuActivity : AppCompatActivity() {
     }
 
     fun toLikedGuides(view: View) {
-        val intent = Intent(this, LikedGuidesListActivity::class.java)
+        val intent = Intent(this, BookmarksListActivity::class.java)
         startActivity(intent)
     }
 }
