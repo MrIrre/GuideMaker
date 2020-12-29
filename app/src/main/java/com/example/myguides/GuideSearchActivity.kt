@@ -62,7 +62,6 @@ class GuideSearchActivity : AppCompatActivity() {
 
         val intent = Intent(this, GuideActivity::class.java)
         intent.putExtra("current_guide_id", guideItem.id)
-        intent.putExtra("current_guide_name", guideItem.name)
         startActivity(intent)
     }
 

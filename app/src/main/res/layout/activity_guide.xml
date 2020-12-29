@@ -8,9 +8,11 @@
 
     <TextView
         android:id="@+id/guide_name_textView"
-        android:layout_width="393dp"
+        android:layout_width="match_parent"
         android:layout_height="52dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
         android:text="Guide"
         android:textAlignment="center"
         android:textColor="@color/black"
@@ -22,9 +24,11 @@
 
     <TextView
         android:id="@+id/full_guide_description_textView"
-        android:layout_width="392dp"
+        android:layout_width="match_parent"
         android:layout_height="75dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,9 +50,11 @@
 
     <FrameLayout
         android:id="@+id/slides_list_wrapper"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="325dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

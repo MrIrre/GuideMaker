@@ -31,7 +31,6 @@ class BookmarksListActivity : AppCompatActivity() {
         searchInput.visibility = View.GONE
         searchButton.visibility = View.GONE
         searchLineView.visibility = View.GONE
-
     
         val recyclerView: RecyclerView = findViewById(R.id.slides_list_recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
