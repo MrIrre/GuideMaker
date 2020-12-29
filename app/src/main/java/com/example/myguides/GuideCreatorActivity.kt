@@ -76,26 +76,22 @@ class GuideCreatorActivity : AppCompatActivity() {
 
     private fun sendGuide() {
         val uuid = UUID.randomUUID().toString()
-        var userId = ""
 
         AsyncRunner.runAsync(
-            { userId = client.getUserId() },
-            { }
-        )
-
-        val guide = Guide(
-            GuideDescription(
-                uuid,
-                guideNameEditText.text.toString(),
-                guideDescriptionEditText.text.toString()
-            ), guideSlides, userId, listOf(), listOf()
-        )
-
-        AsyncRunner.runAsync(
-            { client.saveGuide(guide) },
+            { client.getUserId() },
             {
-                if (!it.isSuccessful()) {
-                    val error = it.error
+                val guide = Guide(
+                    GuideDescription(
+                        uuid,
+                        guideNameEditText.text.toString(),
+                        guideDescriptionEditText.text.toString()
+                    ), guideSlides, it, listOf(), listOf()
+                )
+
+                val saveGuideResult = client.saveGuide(guide)
+
+                if (!saveGuideResult.isSuccessful()) {
+                    val error = saveGuideResult.error
                     AlertWindow.show(
                         this,
                         "Could not save guide, sorry.\n Error: $error"

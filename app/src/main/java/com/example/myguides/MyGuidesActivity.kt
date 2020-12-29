@@ -50,8 +50,8 @@ class MyGuidesActivity : AppCompatActivity() {
                 } else {
                     recyclerView.adapter = GuideListItemAdapter(
                         it.value as List<GuideDescription>,
-                        R.layout.bookmarks_guide_list_item,
-                        R.id.bookmarks_guide_list_item_text
+                        R.layout.my_guide_list_item,
+                        R.id.my_guide_list_item_text
                     )
                 }
             }
