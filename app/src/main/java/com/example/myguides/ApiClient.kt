@@ -8,6 +8,8 @@ import io.ktor.client.request.post
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.content.TextContent
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
@@ -36,13 +38,15 @@ class ApiClient(private val apiUrl: String, private val token: String) {
     private val client: HttpClient = HttpClient()
 
     fun searchGuides(name: String) : GuideDescriptionListResult {
-        val responseAsBytes = runBlocking {
+        val job = GlobalScope.launch {
             client.get<ByteArray>{
                 url(apiUrl + "/" + "guides/description?name=$name&take=9999&skip=0")
                 header("X-PRIVATE-TOKEN", TokenHelper.getToken())
             }
         }
 
+        job.start()
+        val responseAsBytes = job.r
         val charset = Charsets.UTF_8;
         val responseString = responseAsBytes.toString(charset);
         val a = Klaxon().parse<GuideDescriptionListResult>(responseString);
@@ -53,6 +57,20 @@ class ApiClient(private val apiUrl: String, private val token: String) {
         val responseAsBytes = runBlocking {
             client.get<ByteArray>{
                 url(apiUrl + "/" + "guides/description/liked")
+                header("X-PRIVATE-TOKEN", TokenHelper.getToken())
+            }
+        }
+
+        val charset = Charsets.UTF_8;
+        val responseString = responseAsBytes.toString(charset);
+        val a = Klaxon().parse<GuideDescriptionListResult>(responseString);
+        return a as GuideDescriptionListResult;
+    }
+
+    fun getMyGuides() : GuideDescriptionListResult {
+        val responseAsBytes = runBlocking {
+            client.get<ByteArray>{
+                url(apiUrl + "/" + "guides/description/my")
                 header("X-PRIVATE-TOKEN", TokenHelper.getToken())
             }
         }
@@ -110,7 +128,21 @@ class ApiClient(private val apiUrl: String, private val token: String) {
     fun likeGuide(guideId: String) : GuideDescriptionResult {
         val responseAsBytes = runBlocking {
             client.post<ByteArray>{
-                url(apiUrl + "/" + "likes/$guideId")
+                url(apiUrl + "/" + "like/$guideId")
+                header("X-PRIVATE-TOKEN", TokenHelper.getToken())
+            }
+        }
+
+        val charset = Charsets.UTF_8;
+        val responseString = responseAsBytes.toString(charset);
+        val a = Klaxon().parse<GuideDescriptionResult>(responseString);
+        return a as GuideDescriptionResult;
+    }
+
+    fun dislikeGuide(guideId: String) : GuideDescriptionResult {
+        val responseAsBytes = runBlocking {
+            client.post<ByteArray>{
+                url(apiUrl + "/" + "dislike/$guideId")
                 header("X-PRIVATE-TOKEN", TokenHelper.getToken())
             }
         }

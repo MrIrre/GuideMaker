@@ -27,4 +27,9 @@ class MenuActivity : AppCompatActivity() {
         val intent = Intent(this, BookmarksListActivity::class.java)
         startActivity(intent)
     }
+
+    fun toMyGuides(view: View) {
+        val intent = Intent(this, MyGuidesActivity::class.java)
+        startActivity(intent)
+    }
 }

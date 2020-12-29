@@ -29,8 +29,6 @@ class GuideActivity : AppCompatActivity() {
     private lateinit var slidesListRecyclerView: RecyclerView
     val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
 
-    private var testFlag: Boolean = true // TODO: delete
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_guide)
@@ -70,7 +68,7 @@ class GuideActivity : AppCompatActivity() {
         // TODO: check bookmark
 
         if (guide.likes.contains(client.getUserId()))
-            changeBookmarkButtonState()
+            bookmarkButton.setImageResource(android.R.drawable.star_big_on)
 
     }
 
@@ -96,15 +94,39 @@ class GuideActivity : AppCompatActivity() {
         return true
     }
 
-    fun changeBookmarkButtonState() {
-        bookmarkButton.setImageResource(android.R.drawable.star_big_on)
+    private fun tryDislike() : Boolean {
+        val likeResult = client.dislikeGuide(guideId)
+        if (!likeResult.isSuccessful())
+        {
+            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
+            val error = likeResult.error as String
+            dlgAlert.setMessage("Could not like guide $guideId, sorry.\n Error: $error")
+            dlgAlert.setTitle("Error Message...")
+            dlgAlert.setPositiveButton("OK", null)
+            dlgAlert.setCancelable(true)
+            dlgAlert.create().show()
+
+            dlgAlert.setPositiveButton("Ok",
+                DialogInterface.OnClickListener { dialog, which -> })
+
+            return false
+        }
+
+        guide = client.getFullGuide(guideId).value as Guide
+        return true
     }
+
 
     fun clickBookmark(view: View) {
         if (!guide.likes.contains(client.getUserId()))
         {
             if (tryLike())
-                changeBookmarkButtonState()
+                bookmarkButton.setImageResource(android.R.drawable.star_big_on)
+        }
+        else
+        {
+            if (tryDislike())
+                bookmarkButton.setImageResource(android.R.drawable.star_big_off)
         }
     }
 
