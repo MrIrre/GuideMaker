@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myguides.common.GuideDescription
 
 class GuideListItemAdapter(private val values: List<GuideDescription>, private val layout: Int, private val viewId: Int): RecyclerView.Adapter<GuideListItemAdapter.ViewHolder>() {
     override fun getItemCount() = values.size

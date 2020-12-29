@@ -13,12 +13,16 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.drawable.toBitmap
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myguides.common.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class GuideActivity : AppCompatActivity() {
+    private lateinit var buttonHelper: ImageButtonHelper
     private lateinit var guide: Guide
 
     //     private lateinit var guideInfo: GuideInfo
@@ -27,106 +31,93 @@ class GuideActivity : AppCompatActivity() {
     private lateinit var guideDescriptionTextView: TextView
     private lateinit var bookmarkButton: ImageButton
     private lateinit var slidesListRecyclerView: RecyclerView
-    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
+    val client: ApiClient =
+        ApiClient(
+            "http://10.0.2.2:5000",
+            TokenHelper.getToken()
+        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_guide)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-
-        guideId = intent.getStringExtra("current_guide_id") as String
-        val guideResult = client.getFullGuide(guideId)
-        if (!guideResult.isSuccessful()) {
-            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
-            val error = guideResult.error as String
-            dlgAlert.setMessage("Could not get guide $guideId, sorry.\n Error: $error")
-            dlgAlert.setTitle("Error Message...")
-            dlgAlert.setPositiveButton("OK", null)
-            dlgAlert.setCancelable(true)
-            dlgAlert.create().show()
-
-            dlgAlert.setPositiveButton("Ok",
-                DialogInterface.OnClickListener { dialog, which -> })
-
-            return
-        }
-
-
         guideNameTextView = findViewById(R.id.guide_name_textView)
         guideDescriptionTextView = findViewById(R.id.full_guide_description_textView)
         bookmarkButton = findViewById(R.id.bookmark_button)
+
         slidesListRecyclerView = findViewById(R.id.slides_list_recyclerView)
-        slidesListRecyclerView.layoutManager = LinearLayoutManager(this)
+        slidesListRecyclerView.layoutManager = LinearLayoutManager(this@GuideActivity)
 
-        guide = guideResult.value as Guide
+        buttonHelper = ImageButtonHelper(bookmarkButton)
 
-        guideNameTextView.text = guide.description.name
-        guideDescriptionTextView.text = guide.description.description // TODO: guide description
-        slidesListRecyclerView.adapter = SlideAdapter(guide.slides)
+        guideId = intent.getStringExtra("current_guide_id") as String
 
-        // TODO: check bookmark
+        GlobalScope.launch(Dispatchers.Default) {
+            val guideResult = client.getFullGuide(guideId)
+            GlobalScope.launch(Dispatchers.Main) {
+                if (!guideResult.isSuccessful()) {
+                    val error = guideResult.error
+                    AlertWindow.show(this@GuideActivity, "Could not get guide. Reason: $error")
+                }
+                else {
+                    guide = guideResult.value as Guide
 
-        if (guide.likes.contains(client.getUserId()))
-            bookmarkButton.setImageResource(android.R.drawable.star_big_on)
+                    guideNameTextView.text = guide.description.name
+                    guideDescriptionTextView.text = guide.description.description
+                    slidesListRecyclerView.adapter = SlideAdapter(guide.slides)
 
-    }
-
-    private fun tryLike() : Boolean {
-        val likeResult = client.likeGuide(guideId)
-        if (!likeResult.isSuccessful())
-        {
-            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
-            val error = likeResult.error as String
-            dlgAlert.setMessage("Could not like guide $guideId, sorry.\n Error: $error")
-            dlgAlert.setTitle("Error Message...")
-            dlgAlert.setPositiveButton("OK", null)
-            dlgAlert.setCancelable(true)
-            dlgAlert.create().show()
-
-            dlgAlert.setPositiveButton("Ok",
-                DialogInterface.OnClickListener { dialog, which -> })
-
-            return false
+                    if (guide.likes.contains(client.getUserId()))
+                        bookmarkButton.setImageResource(android.R.drawable.star_big_on)
+                }
+            }
         }
-
-        guide = client.getFullGuide(guideId).value as Guide
-        return true
     }
 
-    private fun tryDislike() : Boolean {
-        val likeResult = client.dislikeGuide(guideId)
-        if (!likeResult.isSuccessful())
-        {
-            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
-            val error = likeResult.error as String
-            dlgAlert.setMessage("Could not like guide $guideId, sorry.\n Error: $error")
-            dlgAlert.setTitle("Error Message...")
-            dlgAlert.setPositiveButton("OK", null)
-            dlgAlert.setCancelable(true)
-            dlgAlert.create().show()
-
-            dlgAlert.setPositiveButton("Ok",
-                DialogInterface.OnClickListener { dialog, which -> })
-
-            return false
+    private fun tryLike() {
+        GlobalScope.launch(Dispatchers.Default) {
+            val likeResult = client.likeGuide(guideId)
+            GlobalScope.launch(Dispatchers.Main) {
+                if (!likeResult.isSuccessful()) {
+                    val error = likeResult.error
+                    AlertWindow.show(this@GuideActivity, "Could not like guide $guideId\n Error: $error")
+                }
+                else {
+                    guide = client.getFullGuide(guideId).value as Guide
+                    bookmarkButton.setImageResource(android.R.drawable.star_big_on)
+                }
+                buttonHelper.unblock()
+            }
         }
-
-        guide = client.getFullGuide(guideId).value as Guide
-        return true
     }
 
+    private fun tryDislike() {
+        GlobalScope.launch(Dispatchers.Default) {
+            val likeResult = client.dislikeGuide(guideId)
+            GlobalScope.launch(Dispatchers.Main) {
+                if (!likeResult.isSuccessful()) {
+                    val error = likeResult.error
+                    AlertWindow.show(this@GuideActivity, "Could not dislike guide $guideId\n Error: $error")
+                }
+                else {
+                    guide = client.getFullGuide(guideId).value as Guide
+                    bookmarkButton.setImageResource(android.R.drawable.star_big_off)
+                }
+                buttonHelper.unblock()
+            }
+        }
+    }
 
     fun clickBookmark(view: View) {
-        if (!guide.likes.contains(client.getUserId()))
-        {
-            if (tryLike())
-                bookmarkButton.setImageResource(android.R.drawable.star_big_on)
-        }
-        else
-        {
-            if (tryDislike())
-                bookmarkButton.setImageResource(android.R.drawable.star_big_off)
+        buttonHelper.block()
+        GlobalScope.launch(Dispatchers.Default) {
+            val userId = client.getUserId()
+            GlobalScope.launch(Dispatchers.Main) {
+                if (!guide.likes.contains(userId))
+                    tryLike()
+                else
+                    tryDislike()
+            }
         }
     }
 

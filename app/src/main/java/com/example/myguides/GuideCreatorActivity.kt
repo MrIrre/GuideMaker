@@ -21,6 +21,10 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.myguides.common.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
@@ -35,7 +39,11 @@ class GuideCreatorActivity : AppCompatActivity() {
     lateinit var guideDescriptionEditText: EditText
     lateinit var emptyImageViewBitMap: Drawable
 
-    val client: ApiClient = ApiClient("http://10.0.2.2:5000", TokenHelper.getToken())
+    val client: ApiClient =
+        ApiClient(
+            "http://10.0.2.2:5000",
+            TokenHelper.getToken()
+        )
 
     //Image request code
     private val PICK_IMAGE_REQUEST = 1
@@ -80,25 +88,32 @@ class GuideCreatorActivity : AppCompatActivity() {
     }
 
     private fun sendGuide() {
-        val uuid = UUID.randomUUID().toString();
-        val userId = client.getUserId()
-        val guide = Guide(GuideDescription(uuid, guideNameEditText.text.toString(), guideDescriptionEditText.text.toString()), guideSlides, userId, listOf(), listOf())
-        val saveGuideResult = client.saveGuide(guide)
-        if (!saveGuideResult.isSuccessful()) {
-            val dlgAlert: AlertDialog.Builder = AlertDialog.Builder(this)
-            val error = saveGuideResult.error as String
-            dlgAlert.setMessage("Could not save guide, sorry.\n Error: $error")
-            dlgAlert.setTitle("Error Message...")
-            dlgAlert.setPositiveButton("OK", null)
-            dlgAlert.setCancelable(true)
-            dlgAlert.create().show()
-
-            dlgAlert.setPositiveButton("Ok",
-                DialogInterface.OnClickListener { dialog, which -> })
-
-            return
+        val uuid = UUID.randomUUID().toString()
+        var userId = ""
+        GlobalScope.launch(Dispatchers.Default) {
+            userId = client.getUserId()
         }
-        finish()
+
+        val guide = Guide(
+            GuideDescription(
+                uuid,
+                guideNameEditText.text.toString(),
+                guideDescriptionEditText.text.toString()
+            ), guideSlides, userId, listOf(), listOf()
+        )
+
+        GlobalScope.launch(Dispatchers.Default) {
+            val saveGuideResult = client.saveGuide(guide)
+            GlobalScope.launch(Dispatchers.Main) {
+                if (!saveGuideResult.isSuccessful()) {
+                    val error = saveGuideResult.error
+                    AlertWindow.show(this@GuideCreatorActivity, "Could not save guide, sorry.\n Error: $error")
+                }
+                else {
+                    finish()
+                }
+            }
+        }
     }
 
 
