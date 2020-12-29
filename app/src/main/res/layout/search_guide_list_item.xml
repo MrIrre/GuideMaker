@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/search_guide_list_item"
     android:layout_width="match_parent"
     android:layout_height="72dp"
     android:gravity="center_vertical"
@@ -12,13 +13,13 @@
     android:paddingBottom="8dp">
 
     <ImageView
-        android:id="@+id/bookmarks_guide_list_item_image"
+        android:id="@+id/search_guide_list_item_image"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:src="@android:drawable/btn_star_big_on" />
 
     <TextView
-        android:id="@+id/bookmarks_search_guide_list_item"
+        android:id="@+id/search_guide_list_item_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -30,7 +31,7 @@
         android:layout_weight="1" />
 
     <ImageButton
-        android:id="@+id/bookmarks_guide_list_item_button"
+        android:id="@+id/search_list_item_button"
         android:layout_width="59dp"
         android:layout_height="match_parent"
         android:layout_gravity="right"

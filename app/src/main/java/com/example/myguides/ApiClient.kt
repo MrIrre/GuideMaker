@@ -52,7 +52,7 @@ class ApiClient(private val apiUrl: String, private val token: String) {
     fun getLikedGuides() : GuideDescriptionListResult {
         val responseAsBytes = runBlocking {
             client.get<ByteArray>{
-                url(apiUrl + "/" + "guides/liked")
+                url(apiUrl + "/" + "guides/description/liked")
                 header("X-PRIVATE-TOKEN", TokenHelper.getToken())
             }
         }

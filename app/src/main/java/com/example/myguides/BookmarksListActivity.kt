@@ -45,7 +45,21 @@ class BookmarksListActivity : AppCompatActivity() {
             dlgAlert.setPositiveButton("OK", null)
             dlgAlert.setCancelable(true)
             dlgAlert.create().show()
+
+            finish()
+            return
         }
+
+        recyclerView.adapter = GuideListItemAdapter(guidesResult.value as List<GuideDescription>, R.layout.bookmarks_guide_list_item, R.id.bookmarks_guide_list_item_text)
     }
 
+    fun showLikedGuide(view: View) {
+        val position = recyclerView.getChildLayoutPosition(view.parent as View)
+        val guideItem = (recyclerView.adapter as GuideListItemAdapter).getByIndex(position)
+
+
+        val intent = Intent(this, GuideActivity::class.java)
+        intent.putExtra("current_guide_id", guideItem.id)
+        startActivity(intent)
+    }
 }

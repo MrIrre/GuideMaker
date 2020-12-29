@@ -4,13 +4,10 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -52,38 +49,17 @@ class GuideSearchActivity : AppCompatActivity() {
             return
         }
 
-        recyclerView.adapter = Adapter(guides.value as List<GuideDescription>)
+        recyclerView.adapter = GuideListItemAdapter(guides.value as List<GuideDescription>, R.layout.search_guide_list_item, R.id.search_guide_list_item_text)
     }
 
     fun showGuide(view: View) {
         val position = recyclerView.getChildLayoutPosition(view.parent as View)
-        val guideItem = (recyclerView.adapter as Adapter).getByIndex(position)
+        val guideItem = (recyclerView.adapter as GuideListItemAdapter).getByIndex(position)
 
 
         val intent = Intent(this, GuideActivity::class.java)
         intent.putExtra("current_guide_id", guideItem.id)
         startActivity(intent)
-    }
-
-    class Adapter(private val values: List<GuideDescription>): RecyclerView.Adapter<Adapter.ViewHolder>() {
-        override fun getItemCount() = values.size
-
-        fun getByIndex(position: Int): GuideDescription {
-            return values[position]
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val itemView = LayoutInflater.from(parent.context).inflate(R.layout.search_guide_list_item, parent,false)
-            return ViewHolder(itemView)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.textView.text = values[position].name
-        }
-
-        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var textView: TextView = itemView.findViewById(R.id.bookmarks_search_guide_list_item)
-        }
     }
 }
 
