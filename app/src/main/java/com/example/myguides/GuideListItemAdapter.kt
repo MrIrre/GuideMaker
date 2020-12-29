@@ -7,7 +7,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myguides.common.GuideDescription
 
-class GuideListItemAdapter(private val values: List<GuideDescription>, private val layout: Int, private val viewId: Int): RecyclerView.Adapter<GuideListItemAdapter.ViewHolder>() {
+class GuideListItemAdapter(
+    private val values: List<GuideDescription>,
+    private val layout: Int,
+    private val viewId: Int
+) : RecyclerView.Adapter<GuideListItemAdapter.ViewHolder>() {
     override fun getItemCount() = values.size
 
     fun getByIndex(position: Int): GuideDescription {
@@ -16,7 +20,7 @@ class GuideListItemAdapter(private val values: List<GuideDescription>, private v
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = LayoutInflater.from(parent.context)
-            .inflate(layout, parent,false)
+            .inflate(layout, parent, false)
         return ViewHolder(itemView, viewId)
     }
 

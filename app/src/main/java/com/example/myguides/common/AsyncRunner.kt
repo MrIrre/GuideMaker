@@ -6,7 +6,7 @@ import kotlinx.coroutines.launch
 
 class AsyncRunner {
     companion object {
-        fun <T>runAsync(asyncCall: () -> T, asyncCallHandleFunction: (T) -> Unit) {
+        fun <T> runAsync(asyncCall: suspend () -> T, asyncCallHandleFunction: suspend (T) -> Unit) {
             GlobalScope.launch(Dispatchers.Default) {
                 val asyncCallResult = asyncCall()
                 GlobalScope.launch(Dispatchers.Main) {

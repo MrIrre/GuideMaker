@@ -1,7 +1,5 @@
 package com.example.myguides
 
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
@@ -10,9 +8,6 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myguides.common.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 class LoginActivity : AppCompatActivity() {
@@ -45,25 +40,22 @@ class LoginActivity : AppCompatActivity() {
         val authData = AuthData(login, password)
 
         buttonHelper.block("Logging...")
-        GlobalScope.launch(Dispatchers.Default) {
-            val loginResult = client.login(authData)
-            GlobalScope.launch(Dispatchers.Main) {
-                if (loginResult.isSuccessful())
-                {
-                    TokenHelper.saveToken(loginResult.value!!.token)
 
-                    val intent = Intent(this@LoginActivity, MenuActivity::class.java)
+        AsyncRunner.runAsync(
+            { client.login(authData) },
+            {
+                if (it.isSuccessful()) {
+                    TokenHelper.saveToken(it.value!!.token)
+
+                    val intent = Intent(this, MenuActivity::class.java)
                     startActivity(intent)
                     finish()
-                }
-                else
-                {
-                    val error = loginResult.error
-                    AlertWindow.show(this@LoginActivity, "Authorize failed. Reason: $error")
+                } else {
+                    val error = it.error
+                    AlertWindow.show(this, "Authorize failed. Reason: $error")
                 }
                 buttonHelper.unblock()
             }
-        }
+        )
     }
 }
-

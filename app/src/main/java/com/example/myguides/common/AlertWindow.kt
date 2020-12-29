@@ -18,7 +18,6 @@ class AlertWindow {
 
             dlgAlert.setPositiveButton("Ok",
                 DialogInterface.OnClickListener { dialog, which -> })
-
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.example.myguides
 
 import android.content.pm.ActivityInfo
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
 class GuidesListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -10,6 +10,4 @@ class GuidesListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_guides_list)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
-
-
 }

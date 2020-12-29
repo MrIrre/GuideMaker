@@ -1,26 +1,19 @@
 package com.example.myguides
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.myguides.common.AlertWindow
-import com.example.myguides.common.ApiClient
-import com.example.myguides.common.GuideDescription
-import com.example.myguides.common.TokenHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.example.myguides.common.*
 
 class MyGuidesActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
-    val client: ApiClient =
+    private val client: ApiClient =
         ApiClient(
             "http://10.0.2.2:5000",
             TokenHelper.getToken()
@@ -44,23 +37,25 @@ class MyGuidesActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.slides_list_recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        GlobalScope.launch(Dispatchers.Default) {
-            val guidesResult = client.getMyGuides()
-            GlobalScope.launch(Dispatchers.Main) {
-                if (!guidesResult.isSuccessful())
-                {
-                    val error = guidesResult.error
-                    AlertWindow.show(this@MyGuidesActivity, "Could not get your guides, sorry.\nError: $error")
+        AsyncRunner.runAsync(
+            { client.getMyGuides() },
+            {
+                if (!it.isSuccessful()) {
+                    val error = it.error
+                    AlertWindow.show(
+                        this,
+                        "Could not get your guides, sorry.\nError: $error"
+                    )
                     finish()
-                }
-                else
-                {
-                    recyclerView.adapter = GuideListItemAdapter(guidesResult.value as List<GuideDescription>,
+                } else {
+                    recyclerView.adapter = GuideListItemAdapter(
+                        it.value as List<GuideDescription>,
                         R.layout.bookmarks_guide_list_item,
-                        R.id.bookmarks_guide_list_item_text)
+                        R.id.bookmarks_guide_list_item_text
+                    )
                 }
             }
-        }
+        )
     }
 
     fun showMyGuide(view: View) {

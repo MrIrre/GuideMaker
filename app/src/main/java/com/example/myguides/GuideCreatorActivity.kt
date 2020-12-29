@@ -2,8 +2,6 @@ package com.example.myguides
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -22,9 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myguides.common.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
@@ -39,7 +34,7 @@ class GuideCreatorActivity : AppCompatActivity() {
     lateinit var guideDescriptionEditText: EditText
     lateinit var emptyImageViewBitMap: Drawable
 
-    val client: ApiClient =
+    private val client: ApiClient =
         ApiClient(
             "http://10.0.2.2:5000",
             TokenHelper.getToken()
@@ -64,14 +59,6 @@ class GuideCreatorActivity : AppCompatActivity() {
         slideDescriptionEditText = findViewById(R.id.slide_description_editText)
         guideNameEditText = findViewById(R.id.guide_name_plainText)
         guideDescriptionEditText = findViewById(R.id.guide_description_editText)
-
-//        //actionbar
-//        val actionbar = supportActionBar
-//        //set actionbar title
-//        actionbar!!.title = "Guide Creator"
-//        //set back button
-//        actionbar.setDisplayHomeAsUpEnabled(true)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -90,9 +77,11 @@ class GuideCreatorActivity : AppCompatActivity() {
     private fun sendGuide() {
         val uuid = UUID.randomUUID().toString()
         var userId = ""
-        GlobalScope.launch(Dispatchers.Default) {
-            userId = client.getUserId()
-        }
+
+        AsyncRunner.runAsync(
+            { userId = client.getUserId() },
+            { }
+        )
 
         val guide = Guide(
             GuideDescription(
@@ -102,18 +91,19 @@ class GuideCreatorActivity : AppCompatActivity() {
             ), guideSlides, userId, listOf(), listOf()
         )
 
-        GlobalScope.launch(Dispatchers.Default) {
-            val saveGuideResult = client.saveGuide(guide)
-            GlobalScope.launch(Dispatchers.Main) {
-                if (!saveGuideResult.isSuccessful()) {
-                    val error = saveGuideResult.error
-                    AlertWindow.show(this@GuideCreatorActivity, "Could not save guide, sorry.\n Error: $error")
-                }
-                else {
+        AsyncRunner.runAsync(
+            { client.saveGuide(guide) },
+            {
+                if (!it.isSuccessful()) {
+                    val error = it.error
+                    AlertWindow.show(
+                        this,
+                        "Could not save guide, sorry.\n Error: $error"
+                    )
+                } else
                     finish()
-                }
             }
-        }
+        )
     }
 
 
@@ -126,7 +116,11 @@ class GuideCreatorActivity : AppCompatActivity() {
 
     fun addSlide(v: View) {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        (slideImageView.drawable as BitmapDrawable).bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+        (slideImageView.drawable as BitmapDrawable).bitmap.compress(
+            Bitmap.CompressFormat.JPEG,
+            100,
+            byteArrayOutputStream
+        )
         val byteArray = byteArrayOutputStream.toByteArray()
         val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
         val description = slideDescriptionEditText.text.toString()
@@ -169,4 +163,3 @@ class GuideCreatorActivity : AppCompatActivity() {
         )
     }
 }
-
